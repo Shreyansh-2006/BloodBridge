@@ -332,3 +332,5 @@ class AuthManager {
 // Create and export auth instance
 const auth = new AuthManager();
 export default auth;
+
+api.register(userData);

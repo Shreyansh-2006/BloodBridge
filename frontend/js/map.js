@@ -114,7 +114,7 @@ class MapService {
             
             // Get nearby requests
             this.requestsData = await api.getNearbyRequests(filters);
-            
+                        
             // Add markers for each request
             this.addRequestMarkers();
             
