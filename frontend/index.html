@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bridge | Connect Donors & Recipients</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/0a291bc88e.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="container header-content">
+                <div class="logo">
+                    <img src="assets/images/logo.svg" alt="Blood Bridge Logo">
+                    <h1>Blood Bridge</h1>
+                </div>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="#" class="nav-link" data-page="home">Home</a></li>
+                        <li><a href="#" class="nav-link" data-page="donor-dashboard">Donors</a></li>
+                        <li><a href="#" class="nav-link" data-page="request-dashboard">Requests</a></li>
+                        <li><a href="#" class="nav-link" data-page="about">About</a></li>
+                    </ul>
+                </nav>
+                <div class="auth-container">
+                    <button class="btn btn-outline" id="login-btn">Login</button>
+                    <button class="btn btn-primary" id="register-btn">Register</button>
+                    <div class="user-profile hidden">
+                        <span class="notification-badge" id="notification-count">0</span>
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-dropdown hidden">
+                            <ul>
+                                <li><a href="#" data-page="profile">My Profile</a></li>
+                                <li><a href="#" data-page="notifications">Notifications</a></li>
+                                <li><a href="#" id="logout-btn">Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Home Page -->
+            <section id="home-page" class="page active">
+                <div class="hero">
+                    <div class="container hero-content">
+                        <div class="hero-text">
+                            <h1>Connecting Blood Donors With Those in Need</h1>
+                            <p>Blood Bridge is a platform that connects blood donors with patients and hospitals in need. Join our community and help save lives.</p>
+                            <div class="hero-buttons">
+                                <button class="btn btn-primary btn-lg" id="become-donor-btn">Become a Donor</button>
+                                <button class="btn btn-secondary btn-lg" id="request-blood-btn">Request Blood</button>
+                            </div>
+                        </div>
+                        <div class="hero-image">
+                            <img src="assets/images/hero-image.svg" alt="Blood donation illustration">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="features container">
+                    <h2>How It Works</h2>
+                    <div class="feature-cards">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <h3>Register as a Donor</h3>
+                            <p>Create your profile and provide your blood type, location, and availability.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <h3>Get Notified</h3>
+                            <p>Receive alerts when your blood type is needed in your area.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-hand-holding-medical"></i>
+                            </div>
+                            <h3>Respond to Requests</h3>
+                            <p>Accept requests and coordinate with hospitals or patients.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-heartbeat"></i>
+                            </div>
+                            <h3>Save Lives</h3>
+                            <p>Your donation can help save up to three lives with a single donation.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <div class="container">
+                        <h2>Our Impact</h2>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-number" id="donors-count">0</div>
+                                <div class="stat-label">Registered Donors</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="requests-count">0</div>
+                                <div class="stat-label">Blood Requests</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="fulfilled-count">0</div>
+                                <div class="stat-label">Requests Fulfilled</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="lives-saved">0</div>
+                                <div class="stat-label">Lives Saved</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Donor Dashboard -->
+            <section id="donor-dashboard" class="page">
+                <div class="container">
+                    <h1>Donor Dashboard</h1>
+                    <div class="dashboard-tabs">
+                        <div class="tab-buttons">
+                            <button class="tab-btn active" data-tab="nearby-requests">Nearby Requests</button>
+                            <button class="tab-btn" data-tab="my-donations">My Donations</button>
+                            <button class="tab-btn" data-tab="donor-profile">My Donor Profile</button>
+                        </div>
+                        
+                        <div class="tab-content active" id="nearby-requests">
+                            <div class="filter-controls">
+                                <div class="filter-group">
+                                    <label for="blood-type-filter">Blood Type:</label>
+                                    <select id="blood-type-filter">
+                                        <option value="">All Types</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="urgency-filter">Urgency:</label>
+                                    <select id="urgency-filter">
+                                        <option value="">All</option>
+                                        <option value="critical">Critical</option>
+                                        <option value="high">High</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="low">Low</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="distance-filter">Distance:</label>
+                                    <select id="distance-filter">
+                                        <option value="10">10 km</option>
+                                        <option value="20">20 km</option>
+                                        <option value="30" selected>30 km</option>
+                                        <option value="50">50 km</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="request-map-container">
+                                <div id="request-map"></div>
+                            </div>
+                            
+                            <div class="requests-list" id="nearby-requests-list">
+                                <!-- Request cards will be dynamically populated here -->
+                                <div class="no-requests-message hidden">
+                                    <p>No blood requests matching your criteria.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" id="my-donations">
+                            <div class="donation-history">
+                                <h3>Donation History</h3>
+                                <div class="donation-stats">
+                                    <div class="donation-stat">
+                                        <div class="stat-number" id="total-donations">0</div>
+                                        <div class="stat-label">Total Donations</div>
+                                    </div>
+                                    <div class="donation-stat">
+                                        <div class="stat-number" id="last-donation-date">-</div>
+                                        <div class="stat-label">Last Donation</div>
+                                    </div>
+                                    <div class="donation-stat">
+                                        <div class="stat-number" id="next-eligible-date">-</div>
+                                        <div class="stat-label">Next Eligible Date</div>
+                                    </div>
+                                </div>
+                                
+                                <table class="donations-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Hospital/Location</th>
+                                            <th>Request ID</th>
+                                            <th>Patient</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="donations-table-body">
+                                        <!-- Donation history will be populated here -->
+                                    </tbody>
+                                </table>
+                                
+                                <div class="no-donations-message hidden">
+                                    <p>You haven't made any donations yet.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" id="donor-profile">
+                            <form id="donor-profile-form">
+                                <div class="form-section">
+                                    <h3>Personal Information</h3>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="donor-name">Full Name</label>
+                                            <input type="text" id="donor-name" name="name" readonly>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="donor-email">Email</label>
+                                            <input type="email" id="donor-email" name="email" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="donor-phone">Phone Number</label>
+                                            <input type="tel" id="donor-phone" name="phone" readonly>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="donor-blood-type">Blood Type</label>
+                                            <select id="donor-blood-type" name="bloodType" required>
+                                                <option value="">Select Blood Type</option>
+                                                <option value="A+">A+</option>
+                                                <option value="A-">A-</option>
+                                                <option value="B+">B+</option>
+                                                <option value="B-">B-</option>
+                                                <option value="AB+">AB+</option>
+                                                <option value="AB-">AB-</option>
+                                                <option value="O+">O+</option>
+                                                <option value="O-">O-</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h3>Medical Information</h3>
+                                    <div class="form-group">
+                                        <label for="donor-medical-conditions">Medical Conditions</label>
+                                        <textarea id="donor-medical-conditions" name="medicalConditions" placeholder="List any medical conditions that might affect your eligibility to donate"></textarea>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="donor-last-donation">Last Donation Date</label>
+                                            <input type="date" id="donor-last-donation" name="lastDonation">
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="checkbox-group">
+                                                <input type="checkbox" id="donor-available" name="isAvailable">
+                                                <label for="donor-available">Available to donate</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h3>Location Information</h3>
+                                    <div class="form-group">
+                                        <label for="donor-address-line1">Address Line 1</label>
+                                        <input type="text" id="donor-address-line1" name="addressLine1" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="donor-address-line2">Address Line 2 (Optional)</label>
+                                        <input type="text" id="donor-address-line2" name="addressLine2">
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="donor-city">City</label>
+                                            <input type="text" id="donor-city" name="city" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="donor-state">State/Province</label>
+                                            <input type="text" id="donor-state" name="state" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="donor-zip">ZIP/Postal Code</label>
+                                            <input type="text" id="donor-zip" name="zipCode" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="donor-country">Country</label>
+                                            <input type="text" id="donor-country" name="country" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Save Profile</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Request Dashboard -->
+            <section id="request-dashboard" class="page">
+                <div class="container">
+                    <h1>Blood Request Dashboard</h1>
+                    <div class="dashboard-tabs">
+                        <div class="tab-buttons">
+                            <button class="tab-btn active" data-tab="active-requests">Active Requests</button>
+                            <button class="tab-btn" data-tab="create-request">Create Request</button>
+                            <button class="tab-btn" data-tab="request-history">Request History</button>
+                        </div>
+                        
+                        <div class="tab-content active" id="active-requests">
+                            <div class="filter-controls">
+                                <div class="filter-group">
+                                    <label for="active-blood-type-filter">Blood Type:</label>
+                                    <select id="active-blood-type-filter">
+                                        <option value="">All Types</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="active-status-filter">Status:</label>
+                                    <select id="active-status-filter">
+                                        <option value="">All</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="in_progress">In Progress</option>
+                                        <option value="fulfilled">Fulfilled</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="active-requests-list" id="active-requests-list">
+                                <!-- Active request cards will be dynamically populated here -->
+                            </div>
+                            
+                            <div class="no-active-requests hidden">
+                                <p>No active blood requests.</p>
+                                <button class="btn btn-primary" id="create-request-btn">Create New Request</button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" id="create-request">
+                            <form id="blood-request-form">
+                                <div class="form-section">
+                                    <h3>Patient Information</h3>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="patient-name">Patient Name</label>
+                                            <input type="text" id="patient-name" name="patientName" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="request-blood-type">Blood Type Needed</label>
+                                            <select id="request-blood-type" name="bloodType" required>
+                                                <option value="">Select Blood Type</option>
+                                                <option value="A+">A+</option>
+                                                <option value="A-">A-</option>
+                                                <option value="B+">B+</option>
+                                                <option value="B-">B-</option>
+                                                <option value="AB+">AB+</option>
+                                                <option value="AB-">AB-</option>
+                                                <option value="O+">O+</option>
+                                                <option value="O-">O-</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="units-needed">Units Needed</label>
+                                            <input type="number" id="units-needed" name="units" min="1" max="10" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="request-urgency">Urgency Level</label>
+                                            <select id="request-urgency" name="urgency" required>
+                                                <option value="low">Low</option>
+                                                <option value="medium">Medium</option>
+                                                <option value="high">High</option>
+                                                <option value="critical">Critical</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h3>Hospital Information</h3>
+                                    <div class="form-group">
+                                        <label for="hospital-name">Hospital Name</label>
+                                        <input type="text" id="hospital-name" name="hospital" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="hospital-address">Hospital Address</label>
+                                            <input type="text" id="hospital-address" name="hospitalAddress" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="required-by">Required By</label>
+                                            <input type="datetime-local" id="required-by" name="requiredBy" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h3>Contact Information</h3>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="contact-name">Contact Person</label>
+                                            <input type="text" id="contact-name" name="contactName" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="contact-phone">Contact Phone</label>
+                                            <input type="tel" id="contact-phone" name="contactPhone" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="request-notes">Additional Notes</label>
+                                        <textarea id="request-notes" name="notes" placeholder="Any additional information that donors should know"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="tab-content" id="request-history">
+                            <table class="requests-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Patient</th>
+                                        <th>Blood Type</th>
+                                        <th>Units</th>
+                                        <th>Hospital</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="request-history-table">
+                                    <!-- Request history will be populated here -->
+                                </tbody>
+                            </table>
+                            
+                            <div class="no-request-history hidden">
+                                <p>You haven't created any blood requests yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notifications Page -->
+            <section id="notifications" class="page">
+                <div class="container">
+                    <h1>Notifications</h1>
+                    <div class="notifications-header">
+                        <div class="notification-actions">
+                            <button class="btn btn-outline" id="mark-all-read-btn">Mark All as Read</button>
+                        </div>
+                        <div class="notification-filters">
+                            <label for="notification-filter">Filter:</label>
+                            <select id="notification-filter">
+                                <option value="all">All</option>
+                                <option value="unread">Unread</option>
+                                <option value="blood_request">Blood Requests</option>
+                                <option value="donor_response">Donor Responses</option>
+                                <option value="request_update">Request Updates</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="notifications-list" id="notifications-list">
+                        <!-- Notifications will be populated here -->
+                    </div>
+                    
+                    <div class="no-notifications hidden">
+                        <p>You have no notifications.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Page -->
+            <section id="profile" class="page">
+                <div class="container">
+                    <h1>My Profile</h1>
+                    <div class="profile-container">
+                        <div class="profile-sidebar">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user-circle fa-5x"></i>
+                            </div>
+                            <div class="profile-stats">
+                                <div class="profile-stat">
+                                    <div class="stat-number" id="profile-donations">0</div>
+                                    <div class="stat-label">Donations</div>
+                                </div>
+                                <div class="profile-stat">
+                                    <div class="stat-number" id="profile-requests">0</div>
+                                    <div class="stat-label">Requests</div>
+                                </div>
+                            </div>
+                            <div class="profile-actions">
+                                <button class="btn btn-outline btn-block" id="edit-profile-btn">Edit Profile</button>
+                                <button class="btn btn-outline btn-block" id="change-password-btn">Change Password</button>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-content">
+                            <form id="profile-form">
+                                <div class="form-section">
+                                    <h3>Personal Information</h3>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="profile-name">Full Name</label>
+                                            <input type="text" id="profile-name" name="name" disabled>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="profile-email">Email</label>
+                                            <input type="email" id="profile-email" name="email" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="profile-phone">Phone Number</label>
+                                            <input type="tel" id="profile-phone" name="phone" disabled>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="profile-role">Role</label>
+                                            <input type="text" id="profile-role" name="role" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="donor-info-section" class="form-section hidden">
+                                    <h3>Donor Information</h3>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="profile-blood-type">Blood Type</label>
+                                            <input type="text" id="profile-blood-type" name="bloodType" disabled>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="profile-last-donation">Last Donation</label>
+                                            <input type="text" id="profile-last-donation" name="lastDonation" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="profile-address">Address</label>
+                                            <input type="text" id="profile-address" name="address" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions hidden" id="profile-form-actions">
+                                    <button type="button" class="btn btn-outline" id="cancel-edit-btn">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- About Page -->
+            <section id="about" class="page">
+                <div class="container">
+                    <h1>About Blood Bridge</h1>
+                    <div class="about-content">
+                        <div class="about-section">
+                            <h2>Our Mission</h2>
+                            <p>Blood Bridge is dedicated to connecting blood donors with patients in need, streamlining the process of blood donation, and ultimately saving lives through efficient and timely blood transfusions.</p>
+                            
+                            <p>We believe that access to blood should never be a barrier to life-saving medical care. By leveraging technology, we aim to create a community of donors ready to respond to emergencies and routine needs alike.</p>
+                        </div>
+                        
+                        <div class="about-section">
+                            <h2>How It Works</h2>
+                            <ol class="how-it-works">
+                                <li>
+                                    <h3>Register as a Donor</h3>
+                                    <p>Create a profile with your blood type, location, and contact information.</p>
+                                </li>
+                                <li>
+                                    <h3>Respond to Notifications</h3>
+                                    <p>Receive alerts when your blood type is needed in your area.</p>
+                                </li>
+                                <li>
+                                    <h3>Coordinate Donation</h3>
+                                    <p>Connect with the hospital or blood bank to arrange your donation.</p>
+                                </li>
+                                <li>
+                                    <h3>Save Lives</h3>
+                                    <p>Your donation can help save up to three lives with each blood donation.</p>
+                                </li>
+                            </ol>
+                        </div>
+                        
+                        <div class="about-section">
+                            <h2>Blood Donation Facts</h2>
+                            <ul class="donation-facts">
+                                <li>A single car accident victim can require up to 100 units of blood.</li>
+                                <li>Someone in the world needs blood every two seconds.</li>
+                                <li>One donation can save up to three lives.</li>
+                                <li>Less than 10% of eligible people donate blood worldwide.</li>
+                                <li>Blood cannot be manufactured; it can only come from donors.</li>
+                                <li>The average adult has about 10 pints of blood in their body.</li>
+                                <li>The most common blood type is O+, followed by A+.</li>
+                                <li>The rarest blood type is AB-, which is found in less than 1% of the population.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="about-section">
+                            <h2>Contact Us</h2>
+                            <div class="contact-info">
+                                <div class="contact-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <p>info@bloodbridge.org</p>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-phone"></i>
+                                    <p>+1 (800) 555-BLOOD</p>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <p>123 Donation Street, Healthcare City, HC 12345</p>
+                                </div>
+                            </div>
+                            
+                            <form class="contact-form" id="contact-form">
+                                <h3>Send us a message</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="contact-form-name">Name</label>
+                                        <input type="text" id="contact-form-name" name="name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contact-form-email">Email</label>
+                                        <input type="email" id="contact-form-email" name="email" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact-form-subject">Subject</label>
+                                    <input type="text" id="contact-form-subject" name="subject" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact-form-message">Message</label>
+                                    <textarea id="contact-form-message" name="message" rows="5" required></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Send Message</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container footer-content">
+                <div class="footer-logo">
+                    <img src="assets/images/logo-white.svg" alt="Blood Bridge Logo">
+                    <h2>Blood Bridge</h2>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-links-section">
+                        <h3>Quick Links</h3>
+                        <ul>
+                            <li><a href="#" data-page="home">Home</a></li>
+                            <li><a href="#" data-page="donor-dashboard">Donors</a></li>
+                            <li><a href="#" data-page="request-dashboard">Requests</a></li>
+                            <li><a href="#" data-page="about">About</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-links-section">
+                        <h3>Resources</h3>
+                        <ul>
+                            <li><a href="#">Donor FAQs</a></li>
+                            <li><a href="#">Blood Types Guide</a></li>
+                            <li><a href="#">Donation Process</a></li>
+                            <li><a href="#">COVID-19 Information</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-links-section">
+                        <h3>Legal</h3>
+                        <ul>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms of Service</a></li>
+                            <li><a href="#">Cookie Policy</a></li>
+                            <li><a href="#">Data Protection</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-social">
+                    <h3>Connect With Us</h3>
+                    <div class="social-icons">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="container">
+                    <p>&copy; 2025 Blood Bridge. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="login-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Login</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" name="password" required>
+                        </div>
+                        <div class="form-actions">
+                            <div class="forgot-password">
+                                <a href="#" id="forgot-password-link">Forgot Password?</a>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <p>Don't have an account? <a href="#" id="register-link">Register</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="register-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Register</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="register-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="register-name">Full Name</label>
+                                <input type="text" id="register-name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="register-email">Email</label>
+                                <input type="email" id="register-email" name="email" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="register-phone">Phone Number</label>
+                                <input type="tel" id="register-phone" name="phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="register-role">Register as</label>
+                                <select id="register-role" name="role" required>
+                                    <option value="">Select Role</option>
+                                    <option value="donor">Blood Donor</option>
+                                    <option value="requester">Blood Requester</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="register-password">Password</label>
+                                <input type="password" id="register-password" name="password" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="register-confirm-password">Confirm Password</label>
+                                <input type="password" id="register-confirm-password" name="confirmPassword" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="register-terms" name="terms" required>
+                                <label for="register-terms">I agree to the <a href="#">Terms and Conditions</a> and <a href="#">Privacy Policy</a></label>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Register</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <p>Already have an account? <a href="#" id="login-link">Login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="forgot-password-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Reset Password</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="forgot-password-form">
+                        <div class="form-group">
+                            <label for="forgot-email">Email</label>
+                            <input type="email" id="forgot-email" name="email" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Send Reset Link</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="request-details-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Blood Request Details</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="request-details-content">
+                        <!-- Details will be dynamically populated here -->
+                    </div>
+                </div>
+                <div class="modal-footer" id="request-details-footer">
+                    <!-- Footer actions will be populated based on context -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/modals.js"></script>
+    <script src="js/donor-dashboard.js"></script>
+    <script src="js/request-dashboard.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
